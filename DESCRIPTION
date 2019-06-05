@@ -11,7 +11,7 @@ Description: Repository based tools for department and analysis level
     which have changed versions since the last repository build.
 License: Artistic-2.0
 Depends:
-    GRANCore,
+    GRANCore (>= 0.2.5),
     switchr (>= 0.13.4),
     methods
 Imports:
