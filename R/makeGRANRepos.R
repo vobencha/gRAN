@@ -77,6 +77,9 @@ setMethod("makeRepo", "GRANRepository",
         repo_results(repo)$suspended <- manifest_df(repo)$name %in% suspended_pkgs(repo)
     }
 
+    message(paste("Clearing staging repository"))
+    clearStagingRepo(repo)
+
     message(paste("Checking for (and fixing) R version mismatch in packages installed to temp library", Sys.time()))
     repo = checkAndFixLibLoc(repo)
 

@@ -3,6 +3,7 @@ migrateToFinalRepo = function(repo)
     repoLoc <- destination(repo)
     man <- manifest_df(repo)
     bman <- getBuildingManifest(repo = repo)
+    clearStaging <- clear_staging_postbuild(repo)
 
     ## I think this is not necessary because the bug was coming from somewhere else.
     ## might still be a good idea eventually though...
@@ -12,10 +13,8 @@ migrateToFinalRepo = function(repo)
 
     if(all(getBuildingResults(repo)$status == "ok - not tested")) {
         stagingLoc <- file.path(temp_repo(repo), "src", "contrib")
-        clearstage <- FALSE
     }  else {
         stagingLoc <- staging(repo)
-        clearstage <- TRUE
     }
 
     repo = markFailedRevDeps(repo)
@@ -56,21 +55,25 @@ migrateToFinalRepo = function(repo)
                     strict = FALSE)
     repo <- updateResults(repo)
     dummy <- pkgHTML(repo)
-    if(clearstage) {
-        out = tryCatch(unlink(list.files(stagingLoc,
-                                          pattern = paste0("(PACKAGES|Rcheck|",
-                                                       "\\.tar\\..*$",
-                                                       ")"), full.names=TRUE),
-                                                       recursive = TRUE),
-                                          error = function(x) x)
-        if(is(out, "error")) {
-            logfun(repo)("NA", c(paste("Unable to remove tarballs/zips,",
-                "PACKAGES files, and Rcheck directories from staging directory",
-                "after deployment: "), out$message), type="both")
-        }
-    }
+    if (clearStaging)
+        clearStagingRepo(repo, stagingLoc)
     return(repo)
 }
+
+clearStagingRepo = function(repo, stagingLoc=staging(repo)) {
+    out = tryCatch(unlink(list.files(stagingLoc,
+                                      pattern = paste0("(PACKAGES|Rcheck|",
+                                                   "\\.tar\\..*$",
+                                                   ")"), full.names=TRUE),
+                                                   recursive = TRUE),
+                                      error = function(x) x)
+    if (is(out, "error")) {
+        logfun(repo)("NA", c(paste("Unable to remove tarballs/zips,",
+            "PACKAGES files, and Rcheck directories from staging directory",
+            "after deployment: "), out$message), type="both")
+    }
+}
+
 
 clearTmpRepoFailedPkgs = function(repo) {
 
